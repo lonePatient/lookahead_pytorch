@@ -15,7 +15,7 @@ Data: CIFAR10
 
 Model: ResNet_18
 
-EPochs: 30
+Epochs: 30
 
 Optimizer: Adam
 
