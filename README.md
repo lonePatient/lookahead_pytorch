@@ -1,37 +1,49 @@
 ## Lookahead Pytorch
 
-pytorch implement of [Lookahead Optimizer: k steps forward, 1 step back](https://arxiv.org/abs/1907.08610)
+This repository contains a PyTorch implementation of the Lookahead Optimizer from th paper 
 
-## usage
+[Lookahead Optimizer: k steps forward, 1 step back](https://arxiv.org/abs/1907.08610)
+
+by Michael R. Zhang, James Lucas, Geoffrey Hinton and Jimmy Ba.
+
+## Dependencies
+
+* PyTorch
+* torchvision
+
+## Uage
+
+The code in this repository implements both Lookahead and Adam training, with examples on the CIFAR-10 datasets.
+
+To use Lookahead use the following command.
 
 ```python
 from optimizer import Lookahead
 base_optimizer = optim.Adam(model.parameters(), lr=0.001)
 optimizer = Lookahead(base_optimizer=base_optimizer,k=5,alpha=0.5)
 ```
-## example
 
-Data: CIFAR10
+## Example
 
-Model: ResNet_18
+To experiment th result,we use CIFAR-10 dataset for ResNet18.
 
-Epochs: 30
+```python
+# use adam
+python run.py --optimizer-adam
 
-Optimizer: Adam
+# use lookahead 
+python run.py --optimizer=lookahead
+```
+## Results
 
-1. Run `python run.py --optimizer=adam` .
-2. Run `python run.py --optimizer=lookahead` .
+Train loss of adam and lookahead with ResNet18 on CIFAR-10.
 
-## result
+[](./png/loss.png)
 
-### train loss
+Valid loss of adam and lookahead with ResNet18 on CIFAR-10.
 
-![](./png/loss.png)
+[](./png/valid_loss.png)
 
-## valid loss
+Valid accuracy of adam and lookahead with ResNet18 on CIFAR-10.
 
-![](./png/valid_loss.png)
-
-## valid acc
-
-![](./png/valid_acc.png)
+[](./png/valid_acc.png)
