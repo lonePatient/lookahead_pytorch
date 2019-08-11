@@ -38,12 +38,12 @@ python run.py --optimizer=lookahead
 
 Train loss of adam and lookahead with ResNet18 on CIFAR-10.
 
-[](./png/loss.png)
+![](./png/loss.png)
 
 Valid loss of adam and lookahead with ResNet18 on CIFAR-10.
 
-[](./png/valid_loss.png)
+![](./png/valid_loss.png)
 
 Valid accuracy of adam and lookahead with ResNet18 on CIFAR-10.
 
-[](./png/valid_acc.png)
+![](./png/valid_acc.png)
