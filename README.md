@@ -1,6 +1,6 @@
 ## Lookahead Pytorch
 
-This repository contains a PyTorch implementation of the Lookahead Optimizer from th paper 
+This repository contains a PyTorch implementation of the Lookahead Optimizer from the paper 
 
 [Lookahead Optimizer: k steps forward, 1 step back](https://arxiv.org/abs/1907.08610)
 
