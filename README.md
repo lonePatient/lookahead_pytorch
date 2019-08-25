@@ -29,7 +29,7 @@ To experiment th result,we use CIFAR-10 dataset for ResNet18.
 
 ```python
 # use adam
-python run.py --optimizer-adam
+python run.py --optimizer=adam
 
 # use lookahead 
 python run.py --optimizer=lookahead
