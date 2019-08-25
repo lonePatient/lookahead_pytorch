@@ -26,7 +26,7 @@ optimizer = Lookahead(base_optimizer=base_optimizer,k=5,alpha=0.5)
 
 ## Example
 
-To experiment th result,we use CIFAR-10 dataset for ResNet18.
+To produce th result,we use CIFAR-10 dataset for ResNet18.
 
 ```python
 # use adam
