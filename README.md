@@ -10,8 +10,9 @@ by Michael R. Zhang, James Lucas, Geoffrey Hinton and Jimmy Ba.
 
 * PyTorch
 * torchvision
+* matplotlib
 
-## Uage
+## Usage
 
 The code in this repository implements both Lookahead and Adam training, with examples on the CIFAR-10 datasets.
 
