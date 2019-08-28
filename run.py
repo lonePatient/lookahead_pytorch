@@ -9,7 +9,7 @@ from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 import torch.optim as optim
 from trainingmonitor import TrainingMonitor
-from optimizer import Lookahead
+from optimizer import Lookahead,Ralamb,RAdam
 
 epochs = 30
 batch_size = 128
@@ -23,18 +23,41 @@ model.to(device)
 
 parser = argparse.ArgumentParser(description='CIFAR10')
 parser.add_argument("--model", type=str, default='ResNet18')
-parser.add_argument("--task", type=str, default='ie')
-parser.add_argument("--optimizer", default='adam', choices=['adam','lookahead'])
+parser.add_argument("--task", type=str, default='image')
+parser.add_argument("--optimizer", default='lookahead',type=str)
+parser.add_argument('--base_optimizer',default='adam',choices=['adam','radam','ralamb'])
 args = parser.parse_args()
 
-if args.optimizer=='adam':
-    arch = 'ResNet18_Adam'
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+if args.optimizer !='lookahead':
+    if args.base_optimizer=='adam':
+        arch = 'ResNet18_Adam'
+        optimizer = optim.Adam(model.parameters(), lr=0.001)
+    elif args.base_optimizer=='radam':
+        arch = 'ResNet18_RAdam'
+        optimizer = RAdam(model.parameters(), lr=0.001)
+    elif args.base_optimizer=='ralamb':
+        arch = 'ResNet18_Ralamb'
+        optimizer = Ralamb(model.parameters(), lr=0.001)
+    else:
+        raise ValueError('unknowed base optimizer type')
 
 if args.optimizer == 'lookahead':
-    arch = 'ResNet18_Lookahead'
-    base_optimizer = optim.Adam(model.parameters(), lr=0.001)
-    optimizer = Lookahead(base_optimizer=base_optimizer,k=5,alpha=0.5)
+    if args.base_optimizer == 'adam':
+        arch = 'ResNet18_Lookahead_adam'
+        base_optimizer = optim.Adam(model.parameters(), lr=0.001)
+        optimizer = Lookahead(base_optimizer=base_optimizer,k=5,alpha=0.5)
+
+    elif args.base_optimizer=='radam':
+        arch = 'ResNet18_Lookahead_radam'
+        base_optimizer = RAdam(model.parameters(), lr=0.001)
+        optimizer = Lookahead(base_optimizer=base_optimizer,k=5,alpha=0.5)
+
+    elif args.base_optimizer=='ralamb':
+        arch = 'ResNet18_Lookahead_ralamb'
+        base_optimizer = Ralamb(model.parameters(), lr=0.001)
+        optimizer = Lookahead(base_optimizer=base_optimizer,k=5,alpha=0.5)
+    else:
+        raise ValueError('unknowed base optimizer type')
 
 train_monitor = TrainingMonitor(file_dir='./',arch = arch)
 def train(train_loader):
