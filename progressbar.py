@@ -1,22 +1,30 @@
 import time
 
 class ProgressBar(object):
-    def __init__(self, n_batch,width=30):
+    '''
+    custom progress bar
+    Example:
+        >>> pbar = ProgressBar(n_total=30,desc='training')
+        >>> step = 2
+        >>> pbar(step=step)
+    '''
+    def __init__(self, n_total,width=30,desc = 'Training'):
         self.width = width
-        self.n_batch = n_batch
+        self.n_total = n_total
         self.start_time = time.time()
+        self.desc = desc
 
-    def batch_step(self, batch_idx, info, bar_type='Training'):
+    def __call__(self, step, info={}):
         now = time.time()
-        current = batch_idx + 1
-        recv_per = current / self.n_batch
-        bar = f'[{bar_type}] {current}/{self.n_batch} ['
+        current = step + 1
+        recv_per = current / self.n_total
+        bar = f'[{self.desc}] {current}/{self.n_total} ['
         if recv_per >= 1:
             recv_per = 1
         prog_width = int(self.width * recv_per)
         if prog_width > 0:
             bar += '=' * (prog_width - 1)
-            if current< self.n_batch:
+            if current< self.n_total:
                 bar += ">"
             else:
                 bar += '='
@@ -24,8 +32,8 @@ class ProgressBar(object):
         bar += ']'
         show_bar = f"\r{bar}"
         time_per_unit = (now - self.start_time) / current
-        if current < self.n_batch:
-            eta = time_per_unit * (self.n_batch - current)
+        if current < self.n_total:
+            eta = time_per_unit * (self.n_total - current)
             if eta > 3600:
                 eta_format = ('%d:%02d:%02d' %
                               (eta // 3600, (eta % 3600) // 60, eta % 60))

@@ -20,10 +20,17 @@ To use Lookahead use the following command.
 
 ```python
 from optimizer import Lookahead
-base_optimizer = optim.Adam(model.parameters(), lr=0.001)
-optimizer = Lookahead(base_optimizer=base_optimizer,k=5,alpha=0.5)
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = Lookahead(optimizer=optimizer,k=5,alpha=0.5)
 ```
 
+We found that evaluation performance is typically better using the slow weights. This can be done in PyTorch with something like this in your eval loop:
+```python
+if args.lookahead:
+    optimizer._backup_and_load_cache()
+    val_loss = eval_func(model)
+    optimizer._clear_and_load_backup()
+```
 ## Example
 
 To produce th result,we use CIFAR-10 dataset for ResNet18.

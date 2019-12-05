@@ -8,7 +8,7 @@ import os
 
 def save_json(data, file_path):
     '''
-    保存成json文件
+    save json
     :param data:
     :param json_path:
     :param file_name:
@@ -24,7 +24,7 @@ def save_json(data, file_path):
 
 def load_json(file_path):
     '''
-    加载json文件
+    load json
     :param json_path:
     :param file_name:
     :return:
@@ -65,7 +65,6 @@ class AverageMeter(object):
 
 def seed_everything(seed=1029):
     '''
-    设置整个开发环境的seed
     :param seed:
     :param device:
     :return:

@@ -9,7 +9,7 @@ from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 import torch.optim as optim
 from trainingmonitor import TrainingMonitor
-from optimizer import Lookahead,Ralamb,RAdam
+from optimizer import Lookahead
 
 epochs = 30
 batch_size = 128
@@ -24,44 +24,21 @@ model.to(device)
 parser = argparse.ArgumentParser(description='CIFAR10')
 parser.add_argument("--model", type=str, default='ResNet18')
 parser.add_argument("--task", type=str, default='image')
-parser.add_argument("--optimizer", default='lookahead',type=str)
-parser.add_argument('--base_optimizer',default='adam',choices=['adam','radam','ralamb'])
+parser.add_argument("--optimizer", default='lookahead',type=str,choices=['lookahead','adam'])
 args = parser.parse_args()
 
-if args.optimizer !='lookahead':
-    if args.base_optimizer=='adam':
-        arch = 'ResNet18_Adam'
-        optimizer = optim.Adam(model.parameters(), lr=0.001)
-    elif args.base_optimizer=='radam':
-        arch = 'ResNet18_RAdam'
-        optimizer = RAdam(model.parameters(), lr=0.001)
-    elif args.base_optimizer=='ralamb':
-        arch = 'ResNet18_Ralamb'
-        optimizer = Ralamb(model.parameters(), lr=0.001)
-    else:
-        raise ValueError('unknowed base optimizer type')
-
 if args.optimizer == 'lookahead':
-    if args.base_optimizer == 'adam':
-        arch = 'ResNet18_Lookahead_adam'
-        base_optimizer = optim.Adam(model.parameters(), lr=0.001)
-        optimizer = Lookahead(base_optimizer=base_optimizer,k=5,alpha=0.5)
-
-    elif args.base_optimizer=='radam':
-        arch = 'ResNet18_Lookahead_radam'
-        base_optimizer = RAdam(model.parameters(), lr=0.001)
-        optimizer = Lookahead(base_optimizer=base_optimizer,k=5,alpha=0.5)
-
-    elif args.base_optimizer=='ralamb':
-        arch = 'ResNet18_Lookahead_ralamb'
-        base_optimizer = Ralamb(model.parameters(), lr=0.001)
-        optimizer = Lookahead(base_optimizer=base_optimizer,k=5,alpha=0.5)
-    else:
-        raise ValueError('unknowed base optimizer type')
+    arch = 'ResNet18_Lookahead_adam'
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    optimizer = Lookahead(optimizer=optimizer,k=5,alpha=0.5)
+else:
+    arch = 'ResNet18_Adam'
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 train_monitor = TrainingMonitor(file_dir='./',arch = arch)
+
 def train(train_loader):
-    pbar = ProgressBar(n_batch=len(train_loader))
+    pbar = ProgressBar(n_total=len(train_loader),desc='Training')
     train_loss = AverageMeter()
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
@@ -71,12 +48,12 @@ def train(train_loader):
         loss = loss_fn(output, target)
         loss.backward()
         optimizer.step()
-        pbar.batch_step(batch_idx = batch_idx,info = {'loss':loss.item()},bar_type='Training')
+        pbar(step = batch_idx,info = {'loss':loss.item()})
         train_loss.update(loss.item(),n =1)
     return {'loss':train_loss.avg}
 
 def test(test_loader):
-    pbar = ProgressBar(n_batch=len(test_loader))
+    pbar = ProgressBar(n_total=len(test_loader),desc='Testing')
     valid_loss = AverageMeter()
     valid_acc = AverageMeter()
     model.eval()
@@ -84,14 +61,19 @@ def test(test_loader):
     with torch.no_grad():
         for batch_idx,(data, target) in enumerate(test_loader):
             data, target = data.to(device), target.to(device)
-            output = model(data)
+            if args.optimizer == 'lookahead':
+                optimizer._backup_and_load_cache()
+                output = model(data)
+                optimizer._clear_and_load_backup()
+            else:
+                output = model(data)
             loss = loss_fn(output, target).item()  # sum up batch loss
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             correct = pred.eq(target.view_as(pred)).sum().item()
             valid_loss.update(loss,n = data.size(0))
             valid_acc.update(correct, n=1)
             count += data.size(0)
-            pbar.batch_step(batch_idx=batch_idx, info={}, bar_type='Testing')
+            pbar(step=batch_idx)
     return {'valid_loss':valid_loss.avg,
             'valid_acc':valid_acc.sum /count}
 
