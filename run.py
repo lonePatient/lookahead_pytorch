@@ -61,12 +61,7 @@ def test(test_loader):
     with torch.no_grad():
         for batch_idx,(data, target) in enumerate(test_loader):
             data, target = data.to(device), target.to(device)
-            if args.optimizer == 'lookahead':
-                optimizer._backup_and_load_cache()
-                output = model(data)
-                optimizer._clear_and_load_backup()
-            else:
-                output = model(data)
+            output = model(data)
             loss = loss_fn(output, target).item()  # sum up batch loss
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             correct = pred.eq(target.view_as(pred)).sum().item()
@@ -107,7 +102,12 @@ loaders = {
 
 for epoch in range(1, epochs + 1):
     train_log = train(loaders['train'])
-    valid_log = test(loaders['valid'])
+    if args.optimizer == 'lookahead':
+        optimizer._backup_and_load_cache()
+        valid_log = test(loaders['valid'])
+        optimizer._clear_and_load_backup()
+    else:
+        valid_log = test(loaders['valid'])
     logs = dict(train_log, **valid_log)
     show_info = f'\nEpoch: {epoch} - ' + "-".join([f' {key}: {value:.4f} ' for key, value in logs.items()])
     print(show_info)
